@@ -37,7 +37,7 @@ jQuery.fn.selectButton = function (options) {
             });
 
             view.find('.selected-option').text($this.children('option:selected').text());
-            view.find('input[type=hidden]').val($this.val());
+            view.find('input[type=hidden]').attr('name', $this.attr('name')).val($this.val());
 
             $this.replaceWith(view);
         }
