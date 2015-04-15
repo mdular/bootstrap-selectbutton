@@ -2,27 +2,47 @@
  * bootstrap dropdown button form proxy
  * @author Markus J Doetsch
  *
- *
- * TODO: detect hidden field (current behaviour) or select input (would create better accessibility)
- *       as proxy and use accordingly.
- *
  * @depends jQuery
  * @param options
  */
 /* global $, jQuery */
+
+jQuery.selectButtonDefaults = {
+    template: '<div class="btn-group select-dropdown btn-group-justified"><div class="btn-group"><button class="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button"><span class="selected-option"></span><i class="icon-caret"></i></button><ul class="dropdown-menu" role="menu"></ul></div><input type="hidden"></div>',
+    templateItem: '<li><a></a></li>'
+};
 
 jQuery.fn.selectButton = function (options) {
     "use strict";
 
     // merge options over default settings
     var settings = $.extend({
-        initOnly    : false
-    }, options );
+        initOnly     : false,
+        template     : $.selectButtonDefaults.template,
+        templateItem : $.selectButtonDefaults.templateItem
+    }, options);
 
     // populate button label from hidden field (browser back-button)
     this.each(function () {
-        var $this    = $(this),
-            $field   = $this.find('input[type=hidden]'),
+        var $this = $(this);
+
+        if ($this.is('select')) {
+            var view = $(settings.template).clone();
+
+            $this.children('option').each(function () {
+                var $option = $(this),
+                    viewItem = $(settings.templateItem).clone();
+                viewItem.find('a').html($option.html()).attr('data-val', $option.val());
+                viewItem.appendTo(view.find('.dropdown-menu'));
+            });
+
+            view.find('.selected-option').text($this.children('option:selected').text());
+            view.find('input[type=hidden]').val($this.val());
+
+            $this.replaceWith(view);
+        }
+            
+        var $field   = $this.find('input[type=hidden]'),
             val      = $field.val(),
             text     = $this.find('[data-val="' + val + '"]').text();
 
